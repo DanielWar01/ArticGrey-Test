@@ -38,7 +38,7 @@ function CartCheckoutActions({checkoutUrl}: {checkoutUrl?: string}) {
   return (
     <div>
       <a href={checkoutUrl} target="_self">
-        <p>Continue to Checkout &rarr;</p>
+        <p>Continue to Checkout hoal &rarr;</p>
       </a>
       <br />
     </div>

@@ -7,6 +7,9 @@ import {
 } from '@shopify/hydrogen';
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
+import {Icon} from '@shopify/polaris';
+import {SearchIcon, CartIcon, PersonIcon} from '@shopify/polaris-icons';
+import GenderToggleButton from './GenderToggleButton';
 
 interface HeaderProps {
   header: HeaderQuery;
@@ -25,17 +28,34 @@ export function Header({
 }: HeaderProps) {
   const {shop, menu} = header;
   return (
-    <header className="header">
-      <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
-        <strong>{shop.name}</strong>
-      </NavLink>
-      <HeaderMenu
-        menu={menu}
-        viewport="desktop"
-        primaryDomainUrl={header.shop.primaryDomain.url}
-        publicStoreDomain={publicStoreDomain}
-      />
-      <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
+    <header className="header z-50 bg-slate-400 p-4 rounded-2xl flex flex-col lg:flex-row lg:p-10 items-center justify-between h-auto lg:h-40">
+      {/* Nombre de la tienda alineado a la izquierda */}
+      <div className="header-left">
+        <NavLink
+          className="text-xl font-bold"
+          prefetch="intent"
+          to="/"
+          style={activeLinkStyle}
+          end
+        >
+          {shop.name}
+        </NavLink>
+      </div>
+
+      {/* Menú centrado */}
+      <nav className="header-menu flex-1 flex justify-center">
+        <HeaderMenu
+          menu={menu}
+          viewport="desktop"
+          primaryDomainUrl={header.shop.primaryDomain.url}
+          publicStoreDomain={publicStoreDomain}
+        />
+      </nav>
+
+      {/* CTA (Sign in, carrito, etc.) alineados a la derecha */}
+      <div className="header-right flex space-x-4">
+        <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
+      </div>
     </header>
   );
 }
@@ -51,11 +71,12 @@ export function HeaderMenu({
   viewport: Viewport;
   publicStoreDomain: HeaderProps['publicStoreDomain'];
 }) {
-  const className = `header-menu-${viewport}`;
+  const className = `header-menu-${viewport} flex justify-center items-center`;
   const {close} = useAside();
 
   return (
     <nav className={className} role="navigation">
+      <SearchToggle />
       {viewport === 'mobile' && (
         <NavLink
           end
@@ -102,14 +123,25 @@ function HeaderCtas({
   return (
     <nav className="header-ctas" role="navigation">
       <HeaderMenuMobileToggle />
-      <NavLink prefetch="intent" to="/account" style={activeLinkStyle}>
+      <GenderToggleButton />
+      <button className="quiz-btn text-white p-2 px-4 rounded-lg cursor-pointer">
+        Take The Quiz
+      </button>
+      <NavLink prefetch="intent" to="/blogs" style={activeLinkStyle}>
         <Suspense fallback="Sign in">
           <Await resolve={isLoggedIn} errorElement="Sign in">
-            {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
+            {(isLoggedIn) =>
+              isLoggedIn ? (
+                'Account'
+              ) : (
+                <div className="w-7">
+                  <Icon source={PersonIcon} />
+                </div>
+              )
+            }
           </Await>
         </Suspense>
       </NavLink>
-      <SearchToggle />
       <CartToggle cart={cart} />
     </nav>
   );
@@ -130,8 +162,8 @@ function HeaderMenuMobileToggle() {
 function SearchToggle() {
   const {open} = useAside();
   return (
-    <button className="reset" onClick={() => open('search')}>
-      Search
+    <button className="reset w-7 cursor-pointer" onClick={() => open('search')}>
+      <Icon source={SearchIcon} />
     </button>
   );
 }
@@ -143,6 +175,7 @@ function CartBadge({count}: {count: number | null}) {
   return (
     <a
       href="/cart"
+      className="w-7 relative"
       onClick={(e) => {
         e.preventDefault();
         open('cart');
@@ -154,7 +187,20 @@ function CartBadge({count}: {count: number | null}) {
         } as CartViewPayload);
       }}
     >
-      Cart {count === null ? <span>&nbsp;</span> : count}
+      <Icon source={CartIcon} tone="base" />{' '}
+      {count === null ? (
+        <span className="absolute">&nbsp;</span>
+      ) : (
+        <div
+          className={`absolute -top-2/8 left-2/4 -translate-2/4 bg-black ${
+            String(count).length >= 2 ? 'w-8' : 'w-6'
+          } h-5 rounded-full`}
+        >
+          <span className="absolute text-white translate-x-[7px] -translate-y-[2px]">
+            {count}
+          </span>
+        </div>
+      )}
     </a>
   );
 }

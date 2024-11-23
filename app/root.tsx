@@ -44,6 +44,10 @@ export function links() {
     {rel: 'stylesheet', href: resetStyles},
     {rel: 'stylesheet', href: appStyles},
     {
+      rel: 'stylesheet',
+      href: 'https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap',
+    },
+    {
       rel: 'preconnect',
       href: 'https://cdn.shopify.com',
     },
