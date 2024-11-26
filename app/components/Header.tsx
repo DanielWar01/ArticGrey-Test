@@ -28,7 +28,7 @@ export function Header({
 }: HeaderProps) {
   const {shop, menu} = header;
   return (
-    <header className="header z-50 bg-slate-400 p-4 rounded-2xl flex flex-col lg:flex-row lg:p-10 items-center justify-between h-auto lg:h-40">
+    <header className="header z-50  bg-slate-400 p-4 rounded-2xl flex flex-col lg:py-0 lg:flex-row items-center justify-between">
       {/* Nombre de la tienda alineado a la izquierda */}
       <div className="header-left">
         <NavLink
@@ -121,28 +121,33 @@ function HeaderCtas({
   cart,
 }: Pick<HeaderProps, 'isLoggedIn' | 'cart'>) {
   return (
-    <nav className="header-ctas" role="navigation">
-      <HeaderMenuMobileToggle />
-      <GenderToggleButton />
-      <button className="quiz-btn text-white p-2 px-4 rounded-lg cursor-pointer">
-        Take The Quiz
-      </button>
-      <NavLink prefetch="intent" to="/blogs" style={activeLinkStyle}>
-        <Suspense fallback="Sign in">
-          <Await resolve={isLoggedIn} errorElement="Sign in">
-            {(isLoggedIn) =>
-              isLoggedIn ? (
-                'Account'
-              ) : (
-                <div className="w-7">
-                  <Icon source={PersonIcon} />
-                </div>
-              )
-            }
-          </Await>
-        </Suspense>
-      </NavLink>
-      <CartToggle cart={cart} />
+    <nav
+      className="header-ctas flex flex-col sm:flex-row items-center"
+      role="navigation"
+    >
+      <div className="flex gap-3">
+        <HeaderMenuMobileToggle />
+        <GenderToggleButton />
+        <button className="quiz-btn text-white p-2 px-4 rounded-lg cursor-pointer">
+          Take The Quiz
+        </button>
+      </div>
+      <div className="flex gap-3">
+        <NavLink prefetch="intent" to="/blogs" style={activeLinkStyle}>
+          <Suspense fallback="Sign in">
+            <Await resolve={isLoggedIn} errorElement="Sign in">
+              {(isLoggedIn) =>
+                isLoggedIn ? (
+                  'Account'
+                ) : (
+                  <img src="/icons/header/user.svg" alt="" />
+                )
+              }
+            </Await>
+          </Suspense>
+        </NavLink>
+        <CartToggle cart={cart} />
+      </div>
     </nav>
   );
 }
@@ -187,16 +192,16 @@ function CartBadge({count}: {count: number | null}) {
         } as CartViewPayload);
       }}
     >
-      <Icon source={CartIcon} tone="base" />{' '}
+      <img src="/icons/header/cart.svg" className="w-[30px] h-[30px]" alt="" />{' '}
       {count === null ? (
         <span className="absolute">&nbsp;</span>
       ) : (
         <div
-          className={`absolute -top-2/8 left-2/4 -translate-2/4 bg-black ${
+          className={`absolute top-full left-full -translate-2/4 ${
             String(count).length >= 2 ? 'w-8' : 'w-6'
           } h-5 rounded-full`}
         >
-          <span className="absolute text-white translate-x-[7px] -translate-y-[2px]">
+          <span className="absolute text-[#1b1f23] translate-x-[7px] -translate-y-[2px]">
             {count}
           </span>
         </div>

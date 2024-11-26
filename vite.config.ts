@@ -40,8 +40,8 @@ export default defineConfig({
       include: [
         '@shopify/polaris',
         '@shopify/polaris-tokens',
+        'swiper',
         'deepmerge',
-        'react-fast-marquee',
       ],
     },
   },

@@ -4,22 +4,17 @@ import {
   useLoaderData,
   Link,
   type MetaFunction,
-  useFetcher,
-  data,
   NavLink,
 } from '@remix-run/react';
 import {Suspense} from 'react';
 import {json} from '@shopify/remix-oxygen';
-import {Image, MediaFile, Money, Video} from '@shopify/hydrogen';
-import type {
-  FeaturedCollectionFragment,
-  RecommendedProductsQuery,
-} from 'storefrontapi.generated';
-import {Media} from '@shopify/hydrogen/storefront-api-types';
-import VideoComponent from '~/components/VideoComponent';
-import ReactPlayer from 'react-player';
+import {Image, Money} from '@shopify/hydrogen';
+import type {RecommendedProductsQuery} from 'storefrontapi.generated';
 import MarqueeBand from '~/components/MarqueeBand';
 import SectionBrands from '~/components/SectionBrands';
+import SectionGoals from '~/components/SectionGoals';
+import SectionCollections from '~/components/SectionCollections';
+import SectionHealthFitness from '~/components/SectionHealth&Fitness';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Hydrogen | Home'}];
@@ -40,12 +35,16 @@ export async function loader(args: LoaderFunctionArgs) {
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
 async function loadCriticalData({context}: LoaderFunctionArgs) {
-  const [{collections}] = await Promise.all([
+  const [featuredCollections, supplementsCollection] = await Promise.all([
     context.storefront.query(FEATURED_COLLECTION_QUERY),
+    context.storefront.query(PRODUCTS_INFORMATION_COLLECTION, {
+      variables: {handle: 'supplements'},
+    }),
   ]);
 
   return {
-    featuredCollection: collections.nodes[0],
+    featuredCollection: featuredCollections.collections,
+    supplementsCollection: supplementsCollection.collectionByHandle, // Ajustar acceso aquí
   };
 }
 
@@ -64,9 +63,9 @@ export function loadDeferredData({context}: LoaderFunctionArgs) {
       return null;
     });
 
-  // Consulta para obtener el video del metaobject
-  const videoMetaobject = context.storefront
-    .query(METAOBJECT_VIDEO_URL_QUERY)
+  // Consulta para obtener las imagenes del metaobject
+  const imageMetaObject = context.storefront
+    .query(METAOBJECT_IMAGES_BRANDS)
     .catch((error) => {
       console.error(error);
       return null;
@@ -74,42 +73,22 @@ export function loadDeferredData({context}: LoaderFunctionArgs) {
 
   return {
     recommendedProducts,
-    videoMetaobject,
+    imageMetaObject,
   };
 }
 
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
   return (
-    <div className="home">
+    <div className="home w-full">
       <HeaderVideo videoPath={'/hero_video.mp4'} />
       <MarqueeBand />
-      <SectionBrands />
-      <FeaturedCollection collection={data.featuredCollection} />
+      <SectionBrands images={data.imageMetaObject} />
+      <SectionGoals collection={data.featuredCollection} />
+      <SectionCollections collection={data.supplementsCollection} />
+      <SectionHealthFitness />
       <RecommendedProducts products={data.recommendedProducts} />
     </div>
-  );
-}
-
-function FeaturedCollection({
-  collection,
-}: {
-  collection: FeaturedCollectionFragment;
-}) {
-  if (!collection) return null;
-  const image = collection?.image;
-  return (
-    <Link
-      className="featured-collection"
-      to={`/collections/${collection.handle}`}
-    >
-      {image && (
-        <div className="featured-collection-image">
-          <Image data={image} sizes="100vw" />
-        </div>
-      )}
-      <h1>{collection.title}</h1>
-    </Link>
   );
 }
 
@@ -129,11 +108,11 @@ function HeaderVideo({videoPath}: {videoPath: string}) {
         Tu navegador no soporta la etiqueta de video.
       </video>
       <h2 className="absolute top-[55%] left-5 text-white text-6xl font-bold max-w-4xl md:text-7xl md:top-[70%]">
-        Great things never came from comfrot zones.
+        Great things never came from comfort zones.
       </h2>
       <NavLink
         to={'/'}
-        className="absolute left-5 bottom-16 p-3 px-10 bg-white text-lg rounded-lg"
+        className="btn-shop absolute left-5 bottom-16 p-3 px-10 bg-white text-lg rounded-lg"
       >
         <span className="font-bold">Shop Now</span>
       </NavLink>
@@ -185,6 +164,7 @@ const FEATURED_COLLECTION_QUERY = `#graphql
   fragment FeaturedCollection on Collection {
     id
     title
+    description
     image {
       id
       url
@@ -196,7 +176,7 @@ const FEATURED_COLLECTION_QUERY = `#graphql
   }
   query FeaturedCollection($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
-    collections(first: 1, sortKey: UPDATED_AT, reverse: true) {
+    collections(first: 5, sortKey: UPDATED_AT, reverse: true) {
       nodes {
         ...FeaturedCollection
       }
@@ -235,37 +215,102 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   }
 ` as const;
 
-const METAOBJECT_VIDEO_URL_QUERY = `#graphql
+const METAOBJECT_IMAGES_BRANDS = `#graphql
   query {
-    metaobject(id: "gid://shopify/Metaobject/105226240310") {
+    metaobject(id: "gid://shopify/Metaobject/105680896310") {
       fields {
         key
         value
-        __typename
-        reference {
-          __typename  # Añadido aquí
-          ... on Video {
-            id
-            __typename  # Añadido aquí
-            alt
-            preview: sources {
-              url
-              width
-              height
-              __typename  # Añadido aquí
-            }
-            mediaContentType
-            sources {
-              url
-              width
-              height
-              mimeType
-              format
-              __typename  # Añadido aquí
+        references(first: 10) {
+          nodes {
+            ... on MediaImage {
+              image {
+                url
+                width
+                height
+                altText
+                __typename
+              }
             }
           }
         }
       }
+    }
+  }
+` as const;
+
+const PRODUCTS_INFORMATION_COLLECTION = `#graphql
+  query getCollectionProducts($handle: String!) {
+    collectionByHandle(handle: $handle) {
+      id
+      title
+      description
+      products(first: 10) {
+        edges {
+          node {
+            id
+            title
+            handle
+            description
+            priceRange {
+              minVariantPrice {
+                amount
+                currencyCode
+              }
+            }
+            tags
+            images(first: 5) {
+              edges {
+                node {
+                  url
+                  altText
+                }
+              }
+            }
+            variants(first: 5) {
+              edges {
+                node {
+                  ...ProductVariant
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  fragment ProductVariant on ProductVariant {
+    availableForSale
+    compareAtPrice {
+      amount
+      currencyCode
+    }
+    id
+    image {
+      __typename
+      id
+      url
+      altText
+      width
+      height
+    }
+    price {
+      amount
+      currencyCode
+    }
+    product {
+      title
+      handle
+    }
+    selectedOptions {
+      name
+      value
+    }
+    sku
+    title
+    unitPrice {
+      amount
+      currencyCode
     }
   }
 ` as const;

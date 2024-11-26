@@ -288,13 +288,87 @@ export type FooterQuery = {
   >;
 };
 
-export type FeaturedCollectionFragment = Pick<
-  StorefrontAPI.Collection,
-  'id' | 'title' | 'handle'
-> & {
+export type FeaturedCollectionFragment = {
+  nodes: Array<
+    Pick<StorefrontAPI.Collection, 'id' | 'title' | 'handle' | 'description'> & {
+      image?: StorefrontAPI.Maybe<
+        Pick<StorefrontAPI.Image, 'id' | 'url' | 'altText' | 'width' | 'height'>
+      >;
+    }
+  >;
+};
+
+export type CollectionFragment = Pick<StorefrontAPI.Collection, 'id' | 'title' | 'handle' | 'description'> & {
   image?: StorefrontAPI.Maybe<
     Pick<StorefrontAPI.Image, 'id' | 'url' | 'altText' | 'width' | 'height'>
   >;
+}
+
+export type GetCollectionProductsQuery = {
+  id: Collection['id'];
+  title: Collection['title'];
+  description: Collection['description'];
+  products: {
+    edges: Array<{
+      node: FragmentProductInformation
+    }>;
+  };
+} | null;
+
+export type FragmentProductInformation = {
+  id: Product['id'];
+  title: Product['title'];
+  handle: Product['handle'];
+  description: Product['description'];
+  priceRange: {
+    minVariantPrice: Pick<
+      StorefrontAPI.MoneyV2,
+      'amount' | 'currencyCode'
+    >;
+  };
+  tags: string[];
+  images: {
+    edges: Array<{
+      node: {
+        url: Image['url'];
+        altText: Image['altText'];
+      };
+    }>;
+  };
+  variants: {
+    edges: Array<{
+      node: {
+        availableForSale: boolean; // Indica si está disponible para la venta
+        compareAtPrice?: {
+          amount: string;
+          currencyCode: string;
+        } | null; // Precio de comparación
+        id: string; // ID de la variante
+        image?: {
+          __typename: string; // Tipo GraphQL
+          id: string;
+          url: string; // URL de la imagen de la variante
+          altText?: string | null; // Texto alternativo para la imagen
+          width?: number | null; // Ancho de la imagen
+          height?: number | null; // Altura de la imagen
+        } | null;
+        price: {
+          amount: string; // Precio de la variante
+          currencyCode: string; // Código de moneda
+        };
+        product: {
+          title: string; // Título del producto padre
+          handle: string; // Slug del producto padre
+        };
+        selectedOptions: Array<{
+          name: string; // Nombre de la opción (ej. Color, Talla)
+          value: string; // Valor de la opción (ej. Azul, M)
+        }>;
+        sku?: string | null; // SKU de la variante
+        title: string; // Título de la variante
+      };
+    }>;
+  };
 };
 
 export type FeaturedCollectionQueryVariables = StorefrontAPI.Exact<{
@@ -358,6 +432,26 @@ export type RecommendedProductsQuery = {
     >;
   };
 };
+
+export type MediaImageResponse = {
+    metaobject: {
+      fields: Array<{
+        key: string;
+        value: string;
+        references: {
+          nodes: Array<{
+            image: {
+              url: string;
+              width: number;
+              height: number;
+              altText: string | null;
+              __typename: string;
+            }
+          }>
+        }
+      }>
+    }
+}
 
 export type ArticleQueryVariables = StorefrontAPI.Exact<{
   articleHandle: StorefrontAPI.Scalars['String']['input'];
