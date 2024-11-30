@@ -32,6 +32,7 @@ aside {
   right: calc(-1 * var(--aside-width));
   top: 0;
   transition: transform 200ms ease-in-out;
+  z-index: 1000;
 }
 
 aside header {
@@ -160,9 +161,9 @@ button.reset:hover:not(:has(> *)) {
   background: #fff;
   display: flex;
   height: 80px;
-  position: absolute;
+  position: fixed;
   top: 0;
-  z-index: 10;
+  z-index: 2;
 }
 
 .header-menu-mobile-toggle {
@@ -227,19 +228,14 @@ button.reset:hover:not(:has(> *)) {
 * --------------------------------------------------
 */
 .footer {
-  background: var(--color-dark);
+  background: rgba(0, 0, 0, 0.1);
   margin-top: auto;
 }
 
 .footer-menu {
-  align-items: center;
   display: flex;
-  grid-gap: 1rem;
+  grid-gap: 0;
   padding: 1rem;
-}
-
-.footer-menu a {
-  color: var(--color-light);
 }
 
 /*
@@ -604,23 +600,15 @@ button.reset:hover:not(:has(> *)) {
 }
 
 /*
-* --------------------------------------------------
-* additional styles -> ProductCard
-* --------------------------------------------------
+* -------------------------------------------------------
+* additional styles -> ProductCard and SupplementsSection
+* -------------------------------------------------------
 */
-
 
 .product-card:hover .product-image{
   transform: scale(1.05);
 }
 
-.product-card:hover .product-hover{
-  top:0;
-}
-
-.product-card:hover .product-info{
-  opacity: 0;
-}
 
 .swimlane .swiper-slide {
   height: auto !important;
@@ -655,6 +643,10 @@ button.reset:hover:not(:has(> *)) {
   overflow-y: visible;
 }
 
+.swimlane-2{
+  overflow-y: visible;
+}
+
 .custom-next:hover,
 .custom-prev:hover {
   background-color: #1B1F23;
@@ -670,4 +662,132 @@ button.reset:hover:not(:has(> *)) {
 .custom-next:hover svg,
 .custom-prev:hover svg {
   stroke: #fff;
+}
+
+/*
+* -------------------------------------------------------
+* additional styles -> Bundle Section
+* -------------------------------------------------------
+*/
+
+.btn-bundle{
+  position: relative;
+}
+
+.btn-bundle::after{
+  content: "";
+  position: absolute;
+  background-color: #1B1F23;
+  top: 120%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  opacity: 0;
+  transition: all 0.5s ease-in-out;
+}
+
+.btn-bundle:hover:after{
+  opacity: 1;
+}
+
+.custom-next-bundle,
+.custom-prev-bundle {
+  width: 40px;
+  height: 40px;
+  padding: 10px;
+}
+
+.custom-prev-blend:hover,
+.custom-next-bundle:hover,
+.custom-next-blend:hover,
+.custom-prev-bundle:hover {
+  background-color: #1B1F23;
+}
+
+.custom-prev-blend svg, .custom-next-blend svg,
+.custom-prev-bundle svg, .custom-next-bundle svg {
+  width: 15px;
+  height: 15px;
+  object-fit: contain;
+  transform-origin: center;
+}
+
+.custom-prev-blend:hover svg,
+.custom-next-bundle:hover svg,
+.custom-next-blend:hover svg,
+.custom-prev-bundle:hover svg {
+  stroke: #fff;
+}
+
+/*
+* -------------------------------------------------------
+* additional styles -> Bundle Section
+* -------------------------------------------------------
+*/
+.article-1 {
+  grid-column: 1 / 4;
+  grid-row: 1 / 3;
+}
+.article-2 {
+  grid-column: 4 / 6;
+  grid-row: 1 / 2;
+}
+.article-3 {
+  grid-column: 4 / 6;
+  grid-row: 2 / 3;
+}
+
+.article-2, .article-3{
+  display: flex;
+  gap: 1rem;
+}
+
+.article-posts > a:first-child .article-info {
+  position: absolute;
+  color: white;
+  top: 60%;
+  left: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 370px;
+}
+
+.article-posts > a:first-child .article-info h3{
+  font-size: 24px;
+  font-weight: 500;
+}
+.article-posts > a:nth-child(2) img,
+.article-posts > a:nth-child(3) img{
+  width: 50% !important;
+}
+
+.article-posts > a:nth-child(2) .article-info,
+.article-posts > a:nth-child(3) .article-info{
+  margin-left: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content:space-between;
+  padding: 2rem 0;
+}
+
+.article-posts > a:nth-child(2) .article-info h3,
+.article-posts > a:nth-child(3) .article-info h3{
+  font-weight: 500;
+  font-size: 18px;
+}
+
+
+/*
+* -------------------------------------------------------
+* additional styles -> Instagram section
+* -------------------------------------------------------
+*/
+
+.instagram-1{
+  grid-column: 1 / 3;
+}
+
+.rest-instagram:hover .filter-image{
+  opacity: 1;
 }

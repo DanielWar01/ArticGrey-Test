@@ -32,7 +32,7 @@ export default function SectionCollections({
         </div>
 
         <p className="">🌟 Trending</p>
-        <h3 className="text-[40px] font-[500] text-slate-900">
+        <h3 className="text-[40px] font-[500] text-[#1B1F23]">
           {collection?.title}
         </h3>
         <Link to="/collections/supplements" className="underline btn-view-all">
@@ -50,7 +50,7 @@ export default function SectionCollections({
             prevEl: '.custom-prev',
           }}
           breakpoints={{
-            320: {slidesPerView: 1, spaceBetween: 10},
+            360: {slidesPerView: 1, spaceBetween: 10},
             480: {slidesPerView: 2, spaceBetween: 15},
             768: {slidesPerView: 3, spaceBetween: 20},
             1024: {slidesPerView: 4, spaceBetween: 20},

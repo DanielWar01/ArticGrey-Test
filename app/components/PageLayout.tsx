@@ -14,6 +14,7 @@ import {
   SearchFormPredictive,
 } from '~/components/SearchFormPredictive';
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
+import FooterSection from './FooterSection';
 
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;

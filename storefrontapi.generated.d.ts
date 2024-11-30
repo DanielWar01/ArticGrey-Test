@@ -288,6 +288,43 @@ export type FooterQuery = {
   >;
 };
 
+export type ArticlesResponse = {
+  data: {
+    blogByHandle: {
+      title: string; // Título del blog
+      articles: {
+        pageInfo: {
+          hasNextPage: boolean; // Indica si hay más páginas disponibles
+          hasPreviousPage: boolean; // Indica si hay páginas previas disponibles
+          startCursor: string; // Cursor de inicio para la paginación
+          endCursor: string; // Cursor final para la paginación
+        };
+        nodes: Array<Article>; // Lista de artículos
+      };
+    };
+  };
+};
+
+export type Article = {
+  title: string; // Título del artículo
+  handle: string; // Identificador único del artículo
+  publishedAt: string; // Fecha de publicación (ISO 8601)
+  excerpt: string | null; // Resumen del artículo
+  contentHtml: string; // Contenido en formato HTML
+  seo: {
+    title: string | null; // Título SEO
+    description: string | null; // Descripción SEO
+  };
+  image: {
+    url: string; // URL de la imagen destacada
+    altText: string | null; // Texto alternativo de la imagen
+  } | null; // La imagen puede ser nula
+  author: {
+    name: string; // Nombre del autor del artículo
+  };
+};
+
+
 export type FeaturedCollectionFragment = {
   nodes: Array<
     Pick<StorefrontAPI.Collection, 'id' | 'title' | 'handle' | 'description'> & {
@@ -297,12 +334,6 @@ export type FeaturedCollectionFragment = {
     }
   >;
 };
-
-export type CollectionFragment = Pick<StorefrontAPI.Collection, 'id' | 'title' | 'handle' | 'description'> & {
-  image?: StorefrontAPI.Maybe<
-    Pick<StorefrontAPI.Image, 'id' | 'url' | 'altText' | 'width' | 'height'>
-  >;
-}
 
 export type GetCollectionProductsQuery = {
   id: Collection['id'];
@@ -315,11 +346,34 @@ export type GetCollectionProductsQuery = {
   };
 } | null;
 
+export type GetMediaImageQuery = {
+  node: {
+    __typename: 'MediaImage'; // Discriminador para identificar el tipo específico
+    image: {
+      url: string;
+      width: number;
+      height: number;
+      altText: string | null; // Puede ser nulo si no tiene texto alternativo
+    };
+  } | null; // Puede ser nulo si no se encuentra el nodo
+};
+
+
 export type FragmentProductInformation = {
   id: Product['id'];
   title: Product['title'];
   handle: Product['handle'];
   description: Product['description'];
+  productType: Product['productType'];
+  collections: {
+    edges: Array<{
+      node: {
+        id: string;
+        title: string;
+        handle: string;
+      };
+    }>;
+  };
   priceRange: {
     minVariantPrice: Pick<
       StorefrontAPI.MoneyV2,
@@ -338,34 +392,34 @@ export type FragmentProductInformation = {
   variants: {
     edges: Array<{
       node: {
-        availableForSale: boolean; // Indica si está disponible para la venta
+        availableForSale: boolean;
         compareAtPrice?: {
           amount: string;
           currencyCode: string;
-        } | null; // Precio de comparación
-        id: string; // ID de la variante
+        } | null;
+        id: string;
         image?: {
-          __typename: string; // Tipo GraphQL
+          __typename: string;
           id: string;
-          url: string; // URL de la imagen de la variante
-          altText?: string | null; // Texto alternativo para la imagen
-          width?: number | null; // Ancho de la imagen
-          height?: number | null; // Altura de la imagen
+          url: string;
+          altText?: string | null;
+          width?: number | null;
+          height?: number | null;
         } | null;
         price: {
-          amount: string; // Precio de la variante
-          currencyCode: string; // Código de moneda
+          amount: string;
+          currencyCode: string;
         };
         product: {
-          title: string; // Título del producto padre
-          handle: string; // Slug del producto padre
+          title: string;
+          handle: string;
         };
         selectedOptions: Array<{
-          name: string; // Nombre de la opción (ej. Color, Talla)
-          value: string; // Valor de la opción (ej. Azul, M)
+          name: string;
+          value: string;
         }>;
-        sku?: string | null; // SKU de la variante
-        title: string; // Título de la variante
+        sku?: string | null;
+        title: string;
       };
     }>;
   };
@@ -502,9 +556,9 @@ export type BlogQuery = {
         nodes: Array<
           Pick<
             StorefrontAPI.Article,
-            'contentHtml' | 'handle' | 'id' | 'publishedAt' | 'title'
+            'contentHtml' | 'handle' | 'id' | 'publishedAt' | 'title' | 'tags'
           > & {
-            author?: StorefrontAPI.Maybe<
+            authorV2?: StorefrontAPI.Maybe<
               Pick<StorefrontAPI.ArticleAuthor, 'name'>
             >;
             image?: StorefrontAPI.Maybe<

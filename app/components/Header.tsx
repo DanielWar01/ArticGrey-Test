@@ -28,7 +28,7 @@ export function Header({
 }: HeaderProps) {
   const {shop, menu} = header;
   return (
-    <header className="header z-50  bg-slate-400 p-4 rounded-2xl flex flex-col lg:py-0 lg:flex-row items-center justify-between">
+    <header className="header  bg-slate-400 p-4 rounded-2xl flex flex-col lg:py-0 lg:flex-row items-center justify-between">
       {/* Nombre de la tienda alineado a la izquierda */}
       <div className="header-left">
         <NavLink

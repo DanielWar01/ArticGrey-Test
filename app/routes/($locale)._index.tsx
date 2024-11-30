@@ -11,10 +11,16 @@ import {json} from '@shopify/remix-oxygen';
 import {Image, Money} from '@shopify/hydrogen';
 import type {RecommendedProductsQuery} from 'storefrontapi.generated';
 import MarqueeBand from '~/components/MarqueeBand';
-import SectionBrands from '~/components/SectionBrands';
+import SectionBrands from '~/components/BrandsSection';
 import SectionGoals from '~/components/SectionGoals';
 import SectionCollections from '~/components/SectionCollections';
 import SectionHealthFitness from '~/components/SectionHealth&Fitness';
+import ResultsSection from '~/components/ResultsSection';
+import BundleSection from '~/components/BundleSection';
+import CustomizeProteinSection from '~/components/CustomizeProteinSection';
+import PlungeSection from '~/components/PlungeSection';
+import BlogSection from '~/components/BlogSection';
+import InstagramSection from '~/components/InstagramSection';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Hydrogen | Home'}];
@@ -34,17 +40,37 @@ export async function loader(args: LoaderFunctionArgs) {
  * Load data necessary for rendering content above the fold. This is the critical data
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
-async function loadCriticalData({context}: LoaderFunctionArgs) {
-  const [featuredCollections, supplementsCollection] = await Promise.all([
+async function loadCriticalData({request, context}: LoaderFunctionArgs) {
+  const searchParams = new URLSearchParams(new URL(request.url).searchParams);
+  const collectionFilter = searchParams.get(`collection`)
+    ? `${searchParams.get('collection')}`
+    : 'sleep';
+  const [
+    featuredCollections,
+    supplementsCollection,
+    bundleCollection,
+    proteinBlend,
+    blogsInformation,
+  ] = await Promise.all([
     context.storefront.query(FEATURED_COLLECTION_QUERY),
     context.storefront.query(PRODUCTS_INFORMATION_COLLECTION, {
       variables: {handle: 'supplements'},
     }),
+    context.storefront.query(PRODUCTS_INFORMATION_COLLECTION, {
+      variables: {handle: collectionFilter},
+    }),
+    context.storefront.query(PROTEIN_BLEND_INFORMATION, {
+      variables: {productType: 'Protein'},
+    }),
+    context.storefront.query(QUERY_BLOGS_INFORMATION),
   ]);
 
   return {
     featuredCollection: featuredCollections.collections,
-    supplementsCollection: supplementsCollection.collectionByHandle, // Ajustar acceso aquí
+    supplementsCollection: supplementsCollection.collectionByHandle,
+    bundleCollection: bundleCollection.collectionByHandle,
+    proteinBlend: proteinBlend.products,
+    blogsInfomration: blogsInformation,
   };
 }
 
@@ -71,23 +97,37 @@ export function loadDeferredData({context}: LoaderFunctionArgs) {
       return null;
     });
 
+  const imageMetaObjectPlunge = context.storefront
+    .query(QUERY_IMAGE_PLUNGE)
+    .catch((error) => {
+      console.error(error);
+      return null;
+    });
+
   return {
     recommendedProducts,
     imageMetaObject,
+    imageMetaObjectPlunge,
   };
 }
 
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
+  const productsSuplements = data.supplementsCollection;
   return (
     <div className="home w-full">
       <HeaderVideo videoPath={'/hero_video.mp4'} />
       <MarqueeBand />
       <SectionBrands images={data.imageMetaObject} />
       <SectionGoals collection={data.featuredCollection} />
-      <SectionCollections collection={data.supplementsCollection} />
+      <SectionCollections collection={productsSuplements} />
       <SectionHealthFitness />
-      <RecommendedProducts products={data.recommendedProducts} />
+      <ResultsSection collection={productsSuplements} />
+      <BundleSection collection={data.bundleCollection} />
+      <CustomizeProteinSection proteins={data.proteinBlend.edges} />
+      <PlungeSection image={data.imageMetaObjectPlunge} />
+      <BlogSection blogs={data.blogsInfomration} />
+      <InstagramSection />
     </div>
   );
 }
@@ -105,7 +145,7 @@ function HeaderVideo({videoPath}: {videoPath: string}) {
       >
         <source src={`/videos/${videoPath}`} type="video/mp4" />
         <track kind="subtitles" srcLang="es" label="Subtítulos en Español" />
-        Tu navegador no soporta la etiqueta de video.
+        Your browser does not support the video tag
       </video>
       <h2 className="absolute top-[55%] left-5 text-white text-6xl font-bold max-w-4xl md:text-7xl md:top-[70%]">
         Great things never came from comfort zones.
@@ -116,46 +156,6 @@ function HeaderVideo({videoPath}: {videoPath: string}) {
       >
         <span className="font-bold">Shop Now</span>
       </NavLink>
-    </div>
-  );
-}
-
-function RecommendedProducts({
-  products,
-}: {
-  products: Promise<RecommendedProductsQuery | null>;
-}) {
-  return (
-    <div className="recommended-products">
-      <h2>Recommended Products</h2>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Await resolve={products}>
-          {(response) => (
-            <div className="recommended-products-grid">
-              {response
-                ? response.products.nodes.map((product) => (
-                    <Link
-                      key={product.id}
-                      className="recommended-product"
-                      to={`/products/${product.handle}`}
-                    >
-                      <Image
-                        data={product.images.nodes[0]}
-                        aspectRatio="1/1"
-                        sizes="(min-width: 45em) 20vw, 50vw"
-                      />
-                      <h4 className="">{product.title}</h4>
-                      <small>
-                        <Money data={product.priceRange.minVariantPrice} />
-                      </small>
-                    </Link>
-                  ))
-                : null}
-            </div>
-          )}
-        </Await>
-      </Suspense>
-      <br />
     </div>
   );
 }
@@ -245,7 +245,7 @@ const PRODUCTS_INFORMATION_COLLECTION = `#graphql
       id
       title
       description
-      products(first: 10) {
+      products(first: 50) {
         edges {
           node {
             id
@@ -311,6 +311,123 @@ const PRODUCTS_INFORMATION_COLLECTION = `#graphql
     unitPrice {
       amount
       currencyCode
+    }
+  }
+` as const;
+
+const PROTEIN_BLEND_INFORMATION = `#graphql
+  query getProductsByType($productType: String!) {
+    products(first: 4, query: $productType) {
+      edges {
+        node {
+          id
+          title
+          productType
+          handle
+          description
+          priceRange {
+            minVariantPrice {
+              amount
+              currencyCode
+            }
+          }
+          tags
+          images(first: 1) {
+            edges {
+              node {
+                url
+                altText
+              }
+            }
+          }
+          variants(first: 9) {
+            edges {
+              node {
+                ...ProductVariant
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  fragment ProductVariant on ProductVariant {
+    availableForSale
+    compareAtPrice {
+      amount
+      currencyCode
+    }
+    id
+    image {
+      __typename
+      id
+      url
+      altText
+      width
+      height
+    }
+    price {
+      amount
+      currencyCode
+    }
+    product {
+      title
+      handle
+    }
+    selectedOptions {
+      name
+      value
+    }
+    sku
+    title
+    unitPrice {
+      amount
+      currencyCode
+    }
+  }
+` as const;
+
+const QUERY_IMAGE_PLUNGE = `#graphql
+  query{
+    node(id: "gid://shopify/MediaImage/44042093101366") {
+      ... on MediaImage {
+        image{
+  				url
+				  width
+				  height
+				  altText
+  			}
+      }
+    }
+  }
+` as const;
+
+const QUERY_BLOGS_INFORMATION = `#graphql
+  query Articles{
+    blog(handle: "news") {
+      title
+      articles(first: 3) {
+        nodes {
+          title
+          handle
+          tags
+          publishedAt
+          seo {
+            title
+            description
+          }
+          image {
+            url
+  					width
+  					height
+            altText
+          }
+          authorV2 {
+            name
+          }
+        }
+      }
     }
   }
 ` as const;

@@ -1,6 +1,7 @@
 import {Suspense} from 'react';
 import {Await, NavLink} from '@remix-run/react';
 import type {FooterQuery, HeaderQuery} from 'storefrontapi.generated';
+import NewsLetterForm from './NewsLetterForm';
 
 interface FooterProps {
   footer: Promise<FooterQuery | null>;
@@ -17,7 +18,8 @@ export function Footer({
     <Suspense>
       <Await resolve={footerPromise}>
         {(footer) => (
-          <footer className="footer">
+          <footer className="footer flex px-10">
+            <NewsLetterForm />
             {footer?.menu && header.shop.primaryDomain?.url && (
               <FooterMenu
                 menu={footer.menu}
@@ -25,6 +27,9 @@ export function Footer({
                 publicStoreDomain={publicStoreDomain}
               />
             )}
+            <div className="footer-menu flex flex-col">
+              <h4 className="font-bold text-lg">Support</h4>
+            </div>
           </footer>
         )}
       </Await>
@@ -42,7 +47,8 @@ function FooterMenu({
   publicStoreDomain: string;
 }) {
   return (
-    <nav className="footer-menu" role="navigation">
+    <nav className="footer-menu flex flex-col" role="navigation">
+      <h4 className="font-bold text-lg">About Us</h4>
       {(menu || FALLBACK_FOOTER_MENU).items.map((item) => {
         if (!item.url) return null;
         // if the url is internal, we strip the domain
@@ -54,7 +60,12 @@ function FooterMenu({
             : item.url;
         const isExternal = !url.startsWith('/');
         return isExternal ? (
-          <a href={url} key={item.id} rel="noopener noreferrer" target="_blank">
+          <a
+            href={url}
+            key={item.id}
+            rel="noopener noreferrer text-[#1b1f23]"
+            target="_blank"
+          >
             {item.title}
           </a>
         ) : (
@@ -124,6 +135,6 @@ function activeLinkStyle({
 }) {
   return {
     fontWeight: isActive ? 'bold' : undefined,
-    color: isPending ? 'grey' : 'white',
+    color: isPending ? 'grey' : '#1b1f23',
   };
 }
