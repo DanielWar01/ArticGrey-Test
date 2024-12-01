@@ -18,17 +18,123 @@ export function Footer({
     <Suspense>
       <Await resolve={footerPromise}>
         {(footer) => (
-          <footer className="footer flex px-10">
-            <NewsLetterForm />
-            {footer?.menu && header.shop.primaryDomain?.url && (
-              <FooterMenu
-                menu={footer.menu}
-                primaryDomainUrl={header.shop.primaryDomain.url}
-                publicStoreDomain={publicStoreDomain}
-              />
-            )}
-            <div className="footer-menu flex flex-col">
-              <h4 className="font-bold text-lg">Support</h4>
+          <footer className="footer">
+            <section className="flex mx-10 flex-col md:justify-between md:flex-row">
+              <NewsLetterForm />
+              {footer?.menu && header.shop.primaryDomain?.url && (
+                <FooterMenu
+                  menu={footer.menu}
+                  primaryDomainUrl={header.shop.primaryDomain.url}
+                  publicStoreDomain={publicStoreDomain}
+                />
+              )}
+              <div className="footer-menu flex flex-col">
+                <h4 className="font-bold text-lg">Support</h4>
+                <NavLink end prefetch="intent" to={'/'}>
+                  Order Status
+                </NavLink>
+                <NavLink end prefetch="intent" to={'/'}>
+                  Help Center
+                </NavLink>
+                <NavLink end prefetch="intent" to={'/'}>
+                  Contact Us
+                </NavLink>
+                <NavLink end prefetch="intent" to={'/'}>
+                  Returns
+                </NavLink>
+              </div>
+              <div className="footer-menu flex flex-col">
+                <h4 className="font-bold text-lg">Important Link</h4>
+                <NavLink end prefetch="intent" to={'/'}>
+                  Maintenance
+                </NavLink>
+                <NavLink end prefetch="intent" to={'/'}>
+                  Warranty
+                </NavLink>
+                <NavLink end prefetch="intent" to={'/'}>
+                  Canadian Customers
+                </NavLink>
+                <NavLink end prefetch="intent" to={'/'}>
+                  Setup
+                </NavLink>
+              </div>
+              <div className="footer-menu flex flex-col">
+                <h4 className="font-bold text-lg">Legal</h4>
+                <NavLink end prefetch="intent" to={'/'}>
+                  Privacy Legacy
+                </NavLink>
+                <NavLink end prefetch="intent" to={'/'}>
+                  Terms of Service
+                </NavLink>
+                <NavLink end prefetch="intent" to={'/'}>
+                  Affiliate Program
+                </NavLink>
+                <NavLink end prefetch="intent" to={'/'}>
+                  Articles
+                </NavLink>
+              </div>
+              <div className="footer-menu flex flex-col">
+                <h4 className="font-bold">Contact Us</h4>
+                <p>Let Us Help You</p>
+                <p className="font-bold text-2xl">(888) 860-0572</p>
+                <p className="font-bold">Connect With Us</p>
+                <ul className="flex gap-2">
+                  <li>
+                    <a
+                      href="https://www.instagram.com/arcticgrey/"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      <img
+                        src="/icons/social-media/Instagram-1.svg"
+                        alt="Instagram"
+                      />
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="https://x.com/elonmusk"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      <img
+                        src="/icons/social-media/Twitter.svg"
+                        alt="X-Twitter"
+                      />
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="https://www.facebook.com/ArcticGrey/?locale=es_LA"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      <img
+                        src="/icons/social-media/Facebook.svg"
+                        alt="Facebook"
+                      />
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="https://www.youtube.com/@arcticgrey"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      <img
+                        src="/icons/social-media/YouTube.svg"
+                        alt="YouTube"
+                      />
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </section>
+            <div className="w-full flex justify-between px-10 py-2 border-t border-t-neutral-400">
+              <p className="font-[500] text-neutral-500">
+                © uncmfrt.com. All right reserved.
+              </p>
+              <p>Made with &hearts; and &#9749; by Artic Grey</p>
             </div>
           </footer>
         )}

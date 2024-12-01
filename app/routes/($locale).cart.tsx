@@ -1,14 +1,35 @@
-import {Await, type MetaFunction, useRouteLoaderData} from '@remix-run/react';
+import {
+  Await,
+  type MetaFunction,
+  useLoaderData,
+  useRouteLoaderData,
+} from '@remix-run/react';
 import {Suspense} from 'react';
 import type {CartQueryDataReturn} from '@shopify/hydrogen';
 import {CartForm} from '@shopify/hydrogen';
-import {json, type ActionFunctionArgs} from '@shopify/remix-oxygen';
+import {
+  defer,
+  json,
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+} from '@shopify/remix-oxygen';
 import {CartMain} from '~/components/CartMain';
 import type {RootLoader} from '~/root';
 
 export const meta: MetaFunction = () => {
   return [{title: `Hydrogen | Cart`}];
 };
+
+export async function loader({context}: LoaderFunctionArgs) {
+  // Cargar productos recomendados
+  const recommendedProducts = await context.storefront.query(
+    RECOMMENDED_PRODUCTS_QUERY,
+  );
+
+  return defer({
+    recommendedProducts,
+  });
+}
 
 export async function action({request, context}: ActionFunctionArgs) {
   const {cart} = context;
@@ -97,6 +118,9 @@ export async function action({request, context}: ActionFunctionArgs) {
 
 export default function Cart() {
   const rootData = useRouteLoaderData<RootLoader>('root');
+
+  const {recommendedProducts} = useLoaderData<typeof loader>();
+
   if (!rootData) return null;
 
   return (
@@ -108,10 +132,43 @@ export default function Cart() {
           errorElement={<div>An error occurred</div>}
         >
           {(cart) => {
-            return <CartMain layout="page" cart={cart} />;
+            return (
+              <CartMain
+                layout="page"
+                cart={cart}
+                recommendedProducts={recommendedProducts}
+              />
+            );
           }}
         </Await>
       </Suspense>
     </div>
   );
 }
+
+const RECOMMENDED_PRODUCTS_QUERY = `#graphql
+  query RecommendedProducts {
+    products(first: 4) {
+      nodes {
+        id
+        title
+        handle
+        priceRange {
+          minVariantPrice {
+            amount
+            currencyCode
+          }
+        }
+        images(first: 1) {
+          nodes {
+            id
+            url
+            altText
+            width
+            height
+          }
+        }
+      }
+    }
+  }
+`;

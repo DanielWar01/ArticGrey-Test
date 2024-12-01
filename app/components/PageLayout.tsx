@@ -1,4 +1,4 @@
-import {Await, Link} from '@remix-run/react';
+import {Await, Link, useLoaderData} from '@remix-run/react';
 import {Suspense, useId} from 'react';
 import type {
   CartApiQueryFragment,
@@ -14,7 +14,7 @@ import {
   SearchFormPredictive,
 } from '~/components/SearchFormPredictive';
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
-import FooterSection from './FooterSection';
+import {defer, json, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
@@ -23,6 +23,18 @@ interface PageLayoutProps {
   isLoggedIn: Promise<boolean>;
   publicStoreDomain: string;
   children?: React.ReactNode;
+  recommendedProducts?: any;
+}
+
+export async function loader({context}: LoaderFunctionArgs) {
+  // Cargar productos recomendados
+  const recommendedProducts = await context.storefront.query(
+    RECOMMENDED_PRODUCTS_QUERY,
+  );
+
+  return json({
+    recommendedProducts,
+  });
 }
 
 export function PageLayout({
@@ -33,9 +45,10 @@ export function PageLayout({
   isLoggedIn,
   publicStoreDomain,
 }: PageLayoutProps) {
+  const {recommendedProducts} = useLoaderData<typeof loader>();
   return (
     <Aside.Provider>
-      <CartAside cart={cart} />
+      <CartAside recommendedProducts={recommendedProducts} cart={cart} />
       <SearchAside />
       <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
       {header && (
@@ -56,13 +69,44 @@ export function PageLayout({
   );
 }
 
-function CartAside({cart}: {cart: PageLayoutProps['cart']}) {
+function CartAside({
+  cart,
+  recommendedProducts,
+}: {
+  cart: PageLayoutProps['cart'];
+  recommendedProducts: any;
+}) {
+  console.log('Recommended Products in CartMain:', recommendedProducts);
   return (
-    <Aside type="cart" heading="CART">
+    <Aside
+      type="cart"
+      heading={
+        <Suspense fallback="Your Bag (Loading...)">
+          <Await resolve={cart}>
+            {(cart) => {
+              return (
+                <>
+                  Your Bag
+                  <span className="ml-3 text-lg inline-block h-[36px] w-[36px] text-white bg-[#1b1f23] rounded-full text-center leading-[36px]">
+                    {cart?.totalQuantity}
+                  </span>
+                </>
+              );
+            }}
+          </Await>
+        </Suspense>
+      }
+    >
       <Suspense fallback={<p>Loading cart ...</p>}>
         <Await resolve={cart}>
           {(cart) => {
-            return <CartMain cart={cart} layout="aside" />;
+            return (
+              <CartMain
+                cart={cart}
+                layout="aside"
+                recommendedProducts={recommendedProducts}
+              />
+            );
           }}
         </Await>
       </Suspense>
@@ -173,3 +217,30 @@ function MobileMenuAside({
     )
   );
 }
+
+const RECOMMENDED_PRODUCTS_QUERY = `#graphql
+  query RecommendedProducts {
+    products(first: 4) {
+      nodes {
+        id
+        title
+        handle
+        priceRange {
+          minVariantPrice {
+            amount
+            currencyCode
+          }
+        }
+        images(first: 1) {
+          nodes {
+            id
+            url
+            altText
+            width
+            height
+          }
+        }
+      }
+    }
+  }
+`;

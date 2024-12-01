@@ -133,7 +133,7 @@ function HeaderCtas({
         </button>
       </div>
       <div className="flex gap-3">
-        <NavLink prefetch="intent" to="/blogs" style={activeLinkStyle}>
+        <NavLink prefetch="intent" to="/account" style={activeLinkStyle}>
           <Suspense fallback="Sign in">
             <Await resolve={isLoggedIn} errorElement="Sign in">
               {(isLoggedIn) =>

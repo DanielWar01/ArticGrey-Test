@@ -61,8 +61,8 @@ export function Aside({
       <button className="close-outside" onClick={close} />
       <aside>
         <header>
-          <h3>{heading}</h3>
-          <button className="close reset" onClick={close}>
+          <h3 className="text-[34px] font-[500]">{heading}</h3>
+          <button className=" text-xl font-bold cursor-pointer" onClick={close}>
             &times;
           </button>
         </header>

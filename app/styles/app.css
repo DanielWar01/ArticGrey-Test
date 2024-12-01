@@ -1,5 +1,5 @@
 :root {
-  --aside-width: 400px;
+  --aside-width: 540px;
   --cart-aside-summary-height-with-discount: 300px;
   --cart-aside-summary-height: 250px;
   --grid-item-width: 355px;
@@ -37,7 +37,8 @@ aside {
 
 aside header {
   align-items: center;
-  border-bottom: 1px solid var(--color-dark);
+  border-bottom: 2px solid #e7e7e7;
+  ;
   display: flex;
   height: var(--header-height);
   justify-content: space-between;
@@ -790,4 +791,9 @@ button.reset:hover:not(:has(> *)) {
 
 .rest-instagram:hover .filter-image{
   opacity: 1;
+}
+
+.cart-lines-div{
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }

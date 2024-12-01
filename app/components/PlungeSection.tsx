@@ -18,6 +18,8 @@ export default function PlungeSection({
                 src={response.node.image.url}
                 alt={response.node.image.altText || 'Brand Image'}
                 className="object-cover max-w-full max-h-full filter brightness-75"
+                width="100%"
+                height="100%"
               />
             ) : (
               <div>No image available</div>

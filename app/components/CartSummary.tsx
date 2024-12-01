@@ -15,10 +15,14 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
 
   return (
     <div aria-labelledby="cart-summary" className={className}>
-      <h4>Totals</h4>
-      <dl className="cart-subtotal">
-        <dt>Subtotal</dt>
-        <dd>
+      <dl className="cart-subtotal flex justify-between">
+        <dt>
+          <p className="font-[500] text-xl">Subtotal</p>
+          <p className="text-sm text-neutral-600">
+            Tax included. Shipping calculated at checkout.
+          </p>
+        </dt>
+        <dd className="font-bold text-2xl">
           {cart.cost?.subtotalAmount?.amount ? (
             <Money data={cart.cost?.subtotalAmount} />
           ) : (
@@ -26,8 +30,6 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
           )}
         </dd>
       </dl>
-      <CartDiscounts discountCodes={cart.discountCodes} />
-      <CartGiftCard giftCardCodes={cart.appliedGiftCards} />
       <CartCheckoutActions checkoutUrl={cart.checkoutUrl} />
     </div>
   );
@@ -38,7 +40,9 @@ function CartCheckoutActions({checkoutUrl}: {checkoutUrl?: string}) {
   return (
     <div>
       <a href={checkoutUrl} target="_self">
-        <p>Continue to Checkout hoal &rarr;</p>
+        <p className="text-white bg-[#1b1f23] rounded-xl font-bold p-5 w-full text-center text-[18px]">
+          Checkout
+        </p>
       </a>
       <br />
     </div>
